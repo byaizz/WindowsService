@@ -12,30 +12,29 @@ public:
 	// fCanShutdown and fCanPauseContinue) allow you to specify whether the 
 	// service can be stopped, paused and continued, or be notified when 
 	// system shutdown occurs.
-	ServiceBase(char *pszServiceName,
-		char *pszDisplayName,
-		bool fcanStop = true,
-		bool fcanShutdown = true,
-		bool fcanPauseContinue = false);
+	ServiceBase(const char *pszServiceName, const char *pszDisplayName);
 
 	// Service object destructor. 
 	virtual ~ServiceBase();
 
 	char* GetDisplayName() { return m_displayName; };
 	char* GetServiceName() { return m_serviceName; };
-	bool InstallService();
-	bool UninstallService();
+	bool InstallService();	//install
+	bool UninstallService();//uninstall
+
 	// Register the executable for a service with the Service Control Manager 
 	// (SCM). After you call Run(ServiceBase), the SCM issues a Start command, 
 	// which results in a call to the OnStart method in the service. This 
 	// method blocks until the service has stopped.
-	static bool Run(ServiceBase &service);
+	bool RunService(ServiceBase &service);
+	bool Run();
 
 	//Stop the service
 	void Stop();
 
 protected:
 
+	//check the service is installed or not
 	bool IsInstalled();
 	//log
 	void logEvent(LPCTSTR pFormat, ...);

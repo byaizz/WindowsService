@@ -18,40 +18,16 @@ ServiceBase *ServiceBase::m_service = NULL;
 //   * fCanStop - the service can be stopped
 //   * fCanShutdown - the service is notified when system shutdown occurs
 //   * fCanPauseContinue - the service can be paused and continued
-ServiceBase::ServiceBase(char *pszServiceName,
-	char *pszDisplayName,
-	bool fCanStop,
-	bool fCanShutdown,
-	bool fCanPauseContinue)
+ServiceBase::ServiceBase(const char *pszServiceName, const char *pszDisplayName)
 {
 	//service name must be a valid string and cannot be NULL
 	strcpy_s(m_serviceName, pszServiceName);
 	strcpy_s(m_displayName, pszDisplayName);
 
 	m_statusHandle = NULL;
-
-	//the service runs in its own process
-	m_status.dwServiceType = SERVICE_USER_OWN_PROCESS;
-
-	//the service is starting
-	m_status.dwCurrentState = SERVICE_START_PENDING;
-	
-	//the accepted commands of the service
-	DWORD dwControlsAccepted = 0;
-	if (fCanStop)
-	{
-		dwControlsAccepted |= SERVICE_ACCEPT_STOP;
-	}
-	if (fCanShutdown)
-	{
-		dwControlsAccepted |= SERVICE_ACCEPT_SHUTDOWN;
-	}
-	if (fCanPauseContinue)
-	{
-		dwControlsAccepted |= SERVICE_ACCEPT_PAUSE_CONTINUE;
-	}
-	m_status.dwControlsAccepted = dwControlsAccepted;
-
+	m_status.dwServiceType = SERVICE_WIN32_OWN_PROCESS;
+	m_status.dwCurrentState = SERVICE_STOPPED;
+	m_status.dwControlsAccepted = SERVICE_ACCEPT_STOP | SERVICE_ACCEPT_SHUTDOWN;
 	m_status.dwWin32ExitCode = NO_ERROR;
 	m_status.dwServiceSpecificExitCode = 0;
 	m_status.dwCheckPoint = 0;
@@ -121,7 +97,7 @@ bool ServiceBase::InstallService()
 		TEXT(m_displayName),
 		SERVICE_ALL_ACCESS,
 		SERVICE_WIN32_OWN_PROCESS,
-		SERVICE_DEMAND_START,
+		SERVICE_DEMAND_START,//SERVICE_AUTO_START//开机自启动
 		SERVICE_ERROR_NORMAL,
 		szFilePath,
 		NULL,
@@ -292,7 +268,7 @@ void ServiceBase::Pause()
 //   RETURN VALUE: If the function succeeds, the return value is TRUE. If the 
 //   function fails, the return value is FALSE. To get extended error 
 //   information, call GetLastError.
-bool ServiceBase::Run(ServiceBase &service)
+bool ServiceBase::RunService(ServiceBase &service)
 {
 	m_service = &service;
 	char *svcName = m_service->GetServiceName();
@@ -308,6 +284,11 @@ bool ServiceBase::Run(ServiceBase &service)
 	// thread for the calling process. This call returns when the service has 
 	// stopped. The process should simply terminate when the call returns.
 	return StartServiceCtrlDispatcher(serviceTable);
+}
+
+bool ServiceBase::Run()
+{
+	return RunService(*this);
 }
 
 //   FUNCTION: CServiceBase::SetServiceStatus(DWORD, DWORD, DWORD)

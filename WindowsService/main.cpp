@@ -1,4 +1,4 @@
-#include "serviceBase.h"
+#include "basicMain.h"
 
 #include <iostream>
 using std::cout;
@@ -6,15 +6,12 @@ using std::endl;
 
 #define SERVICE_NAME				"serviceTest"				//internal name of service
 #define SERVICE_DISPLAY_NAME		"serviceTest_by"			//displayed name of service
-#define SERVICE_START_TYPE			SERVICE_DEMAND_START		//service start options
-#define SERVICE_DEPENFENCIES		""
-#define	SERVICE_ACOUNT				"NT AUTHORITY\\LocalService"
-#define SERVICE_PASSWORD			NULL
 
 void ShowHelp()
 {
 	cout << "-i	to install the service.\n"
-		"-r	to remove the service.\n" << endl;
+		"-u	to uninstall the service.\n" << endl;
+	exit(0);
 }
 int main(int argc, char *argv[])
 {
@@ -23,6 +20,8 @@ int main(int argc, char *argv[])
 	{
 		ShowHelp();
 	}
+
+	BasicMain service(SERVICE_NAME, SERVICE_DISPLAY_NAME);
 
 	if (argc == 2)
 	{
@@ -34,9 +33,18 @@ int main(int argc, char *argv[])
 		{
 		case 'i':
 		case 'I':
+			printf("install...\n");
+			service.InstallService();
 			break;
-		case 'r':
-		case 'R':
+		case 'u':
+		case 'U':
+			printf("uninstall...\n");
+			service.UninstallService();
+			break;
+		case 'd':
+		case 'D':
+			printf("deBug run\n");
+			BasicMain::service_thread_func(true);
 			break;
 		default:
 			ShowHelp();
@@ -45,7 +53,8 @@ int main(int argc, char *argv[])
 	}
 	else
 	{
-		//start service
+		printf("run in service mode.\n");
+		service.Run();//start service
 	}
 
 	return 0;
