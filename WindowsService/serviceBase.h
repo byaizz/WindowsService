@@ -17,8 +17,6 @@ public:
 	// Service object destructor. 
 	virtual ~ServiceBase();
 
-	char* GetDisplayName() { return m_displayName; };
-	char* GetServiceName() { return m_serviceName; };
 	bool InstallService();	//install
 	bool UninstallService();//uninstall
 
@@ -26,7 +24,7 @@ public:
 	// (SCM). After you call Run(ServiceBase), the SCM issues a Start command, 
 	// which results in a call to the OnStart method in the service. This 
 	// method blocks until the service has stopped.
-	bool RunService(ServiceBase &service);
+	bool RunService(ServiceBase *service);
 	bool Run();
 
 	//Stop the service
@@ -34,16 +32,16 @@ public:
 
 protected:
 
-	//check the service is installed or not
-	bool IsInstalled();
-	//log
-	void logEvent(LPCTSTR pFormat, ...);
-
 	// When implemented in a derived class, executes when a Start command is 
 	// sent to the service by the SCM or when the operating system starts 
 	// (for a service that starts automatically). Specifies actions to take 
 	// when the service starts.
 	virtual void OnStart(DWORD dwArgc, LPTSTR *pszArgv);
+
+	// When implemented in a derived class, executes when a Stop command is 
+	// sent to the service by the SCM. Specifies actions to take when a 
+	// service stops running.
+	virtual void OnStop();
 
 	// When implemented in a derived class, executes when a Pause command is 
 	// sent to the service by the SCM. Specifies actions to take when a 
@@ -55,16 +53,16 @@ protected:
 	// when a service resumes normal functioning after being paused.
 	virtual void OnContinue();
 
-	// When implemented in a derived class, executes when a Stop command is 
-	// sent to the service by the SCM. Specifies actions to take when a 
-	// service stops running.
-	virtual void OnStop();
-
 	// When implemented in a derived class, executes when the system is 
 	// shutting down. Specifies what should occur immediately prior to the 
 	// system shutting down.
 	virtual void OnShutdown();
 	
+	//check the service is installed or not
+	bool IsInstalled();
+
+	//log
+	void logEvent(LPCTSTR pFormat, ...);
 
 	// Set the service status and report the status to the SCM.
 	void SetServiceStatus(DWORD dwCurrentState,
@@ -92,6 +90,7 @@ private:
 	//Execute when the system is shutting down
 	void Shutdown();
 
+private:
 	//The singleton service instance
 	static ServiceBase *m_service;
 
