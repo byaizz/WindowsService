@@ -156,6 +156,59 @@ bool ServiceBase::UninstallService()
 	return true;
 }
 
+//start service
+bool ServiceBase::StartInstalledService()
+{
+	bool bResult = false;
+
+	// open service control manager
+	SC_HANDLE hSCM = ::OpenSCManager(NULL, NULL, SC_MANAGER_ALL_ACCESS);
+	if (hSCM == NULL)
+	{
+		return bResult;
+	}
+
+	// get service handle
+	SC_HANDLE hService = ::OpenService(hSCM, m_serviceName, SC_MANAGER_ALL_ACCESS);
+	if (hService == NULL)
+	{
+		::CloseServiceHandle(hSCM);
+		MessageBox(NULL, TEXT("Couldn't open service"), TEXT(m_serviceName), MB_OK);
+		return bResult;
+	}
+
+	// query service status
+	SERVICE_STATUS	service_status;
+	printf_s("query service status.\n");
+	if (QueryServiceStatus(hService, &service_status))
+	{
+		if (service_status.dwCurrentState == SERVICE_RUNNING)
+		{
+			bResult = TRUE;
+		}
+		// service is not running, start service
+		else if (StartService(hService, 0, NULL))
+		{
+			bResult = TRUE;
+		}
+		else
+		{
+			DWORD nError = GetLastError();
+			printf_s("service start fail. %d\n", nError);
+		}
+	}
+	else
+	{
+		DWORD nError = GetLastError();
+		printf_s("service status query fail. %d\n", nError);
+	}
+
+	::CloseServiceHandle(hService);
+	::CloseServiceHandle(hSCM);
+
+	return bResult;
+}
+
 //   FUNCTION: CServiceBase::Run(CServiceBase &)
 //
 //   PURPOSE: Register the executable for a service with the Service Control 
@@ -383,7 +436,7 @@ void WINAPI ServiceBase::ServiceMain(DWORD dwArgc, LPTSTR *pszArgv)
 
 	//Register the handler function for the service
 	m_service->m_statusHandle = RegisterServiceCtrlHandler(
-							TEXT(m_service->m_serviceName), ServiceCtrlHandler);
+							TEXT(m_service->GetServiceName()), ServiceCtrlHandler);
 	if (m_service->m_statusHandle == NULL)
 	{
 		throw GetLastError();

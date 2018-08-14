@@ -46,6 +46,10 @@ int main(int argc, char *argv[])
 			printf("deBug run\n");
 			BasicMain::service_thread_func(true);
 			break;
+		case 's':
+		case 'S':
+			service.StartInstalledService();
+			break;
 		default:
 			ShowHelp();
 			break;

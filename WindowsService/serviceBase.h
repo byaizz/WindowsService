@@ -17,8 +17,11 @@ public:
 	// Service object destructor. 
 	virtual ~ServiceBase();
 
+	char* GetDisplayName() { return m_displayName; };
+	char* GetServiceName() { return m_serviceName; };
 	bool InstallService();	//install
 	bool UninstallService();//uninstall
+	bool StartInstalledService();//start service
 
 	// Register the executable for a service with the Service Control Manager 
 	// (SCM). After you call Run(ServiceBase), the SCM issues a Start command, 
