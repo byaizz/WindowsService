@@ -1,7 +1,7 @@
 #include "basicMain.h"
-#include <fstream>
 #include <windows.h>
 #include <thread>
+#include <fstream>
 #include <iostream>
 
 void custom_service()
@@ -15,7 +15,6 @@ void custom_service()
 	while (i < 100)
 	{
 		ofs << "第 " << ++i << " 次" << std::endl;
-		std::cout << i << std::endl;
 		Sleep(100);
 	}
 	ofs.close();
@@ -43,20 +42,6 @@ void BasicMain::service_thread_func(bool deBug)
 }
 void BasicMain::OnStart(DWORD argc, TCHAR * argv[])
 {
-	std::ofstream ofs("\\OnStart.txt", std::ios::app);
-	if (!ofs)
-	{
-		printf("on start---\n");
-		return;
-	}
-	int i = 0;
-	while (i < 100)
-	{
-		ofs << "第 " << ++i << " 次" << std::endl;
-		std::cout << i << std::endl;
-		Sleep(100);
-	}
-	ofs.close();
 	std::thread service_thread(service_thread_func, false);
 	service_thread.detach();
 }

@@ -3,7 +3,7 @@
 
 #include "serviceBase.h"
 
-void main_service();
+void custom_service();
 
 class BasicMain : public ServiceBase{
 public:

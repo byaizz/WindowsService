@@ -118,28 +118,9 @@ bool ServiceBase::UninstallService()
 	SERVICE_STATUS status;
 	if (::ControlService(hService, SERVICE_CONTROL_STOP, &status))
 	{
-		printf("Stopping %s.", TEXT(m_serviceName));
-		Sleep(1000);
-		while (::QueryServiceStatus(hService, &status))
+		while (::QueryServiceStatus(hService, &status) != SERVICE_STOPPED)
 		{
-			if (status.dwCurrentState == SERVICE_STOP_PENDING)
-			{
-				printf(".");
-				Sleep(1000);
-			}
-			else
-			{
-				break;
-			}
-		}
-
-		if (status.dwCurrentState == SERVICE_STOP)
-		{
-			printf("\n%s is stopped.\n", TEXT(m_serviceName));
-		}
-		else
-		{
-			printf("\n%s failed to stop.\n", TEXT(m_serviceName));
+			Sleep(1000);
 		}
 	}
 
@@ -178,8 +159,7 @@ bool ServiceBase::StartInstalledService()
 	}
 
 	// query service status
-	SERVICE_STATUS	service_status;
-	printf_s("query service status.\n");
+	SERVICE_STATUS	service_status; 
 	if (QueryServiceStatus(hService, &service_status))
 	{
 		if (service_status.dwCurrentState == SERVICE_RUNNING)
@@ -203,6 +183,7 @@ bool ServiceBase::StartInstalledService()
 		printf_s("service status query fail. %d\n", nError);
 	}
 
+	printf_s("now the service is started.\n");
 	::CloseServiceHandle(hService);
 	::CloseServiceHandle(hSCM);
 
@@ -362,6 +343,7 @@ bool ServiceBase::IsInstalled()
 	}
 	return bResult;
 }
+
 //   FUNCTION: CServiceBase::SetServiceStatus(DWORD, DWORD, DWORD)
 //
 //   PURPOSE: The function sets the service status and reports the status to 
@@ -430,8 +412,6 @@ void ServiceBase::logEvent(LPCTSTR pFormat, ...)
 //   * lpszArgv - array of command line arguments
 void WINAPI ServiceBase::ServiceMain(DWORD dwArgc, LPTSTR *pszArgv)
 {
-//	MessageBox(NULL, TEXT("servicemain"), TEXT("servicemain-"), MB_OK);
-//	printf("service main\n");
 	assert(m_service != NULL);
 
 	//Register the handler function for the service
@@ -470,8 +450,6 @@ void WINAPI ServiceBase::ServiceMain(DWORD dwArgc, LPTSTR *pszArgv)
 //   to 255.
 void WINAPI ServiceBase::ServiceCtrlHandler(DWORD dwCtrl)
 {
-//	MessageBox(NULL, TEXT("ServiceCtrlHandler"), TEXT("ServiceCtrlHandler-"), MB_OK);
-//	printf("service control handle\n");
 	switch (dwCtrl)
 	{
 	case SERVICE_CONTROL_STOP:
@@ -491,7 +469,6 @@ void WINAPI ServiceBase::ServiceCtrlHandler(DWORD dwCtrl)
 	default:
 		break;
 	}
-	printf("service handle\n");
 }
 
 //   FUNCTION: CServiceBase::Start(DWORD, PWSTR *)
@@ -506,8 +483,6 @@ void WINAPI ServiceBase::ServiceCtrlHandler(DWORD dwCtrl)
 //   * lpszArgv - array of command line arguments
 void ServiceBase::Start(DWORD dwArgc, LPTSTR *pszArgv)
 {
-//	MessageBox(NULL, TEXT("Start"), TEXT(m_serviceName), MB_OK);
-//	printf("start\n");
 	try {
 		logEvent("service start pending.");
 		//Tell SCM that the service is starting

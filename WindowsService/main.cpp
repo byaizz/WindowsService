@@ -1,6 +1,6 @@
 #include "basicMain.h"
-
 #include <iostream>
+
 using std::cout;
 using std::endl;
 
@@ -33,21 +33,22 @@ int main(int argc, char *argv[])
 		{
 		case 'i':
 		case 'I':
-			printf("install...\n");
+			printf("install.\n");
 			service.InstallService();
 			break;
 		case 'u':
 		case 'U':
-			printf("uninstall...\n");
+			printf("uninstall.\n");
 			service.UninstallService();
 			break;
 		case 'd':
 		case 'D':
-			printf("deBug run\n");
+			printf("deBug run.\n");
 			BasicMain::service_thread_func(true);
 			break;
 		case 's':
 		case 'S':
+			printf("start service.\n");
 			service.StartInstalledService();
 			break;
 		default:
@@ -57,7 +58,6 @@ int main(int argc, char *argv[])
 	}
 	else
 	{
-		printf("run in service mode.\n");
 		service.Run();//start service
 	}
 
