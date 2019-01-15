@@ -11,11 +11,11 @@ void custom_service()
 	{
 		return;
 	}
-	int i = 10;
+	int i = 0;
 	while (i < 100)
 	{
 		ofs << "µÚ " << ++i << " ´Î" << std::endl;
-		Sleep(100);
+		Sleep(1000);
 	}
 	ofs.close();
 }
