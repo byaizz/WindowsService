@@ -70,12 +70,12 @@ bool ServiceBase::InstallService()
 		TEXT(m_displayName),
 		SERVICE_ALL_ACCESS,
 		SERVICE_WIN32_OWN_PROCESS,
-		SERVICE_DEMAND_START,//SERVICE_AUTO_START//开机自启动
+		SERVICE_AUTO_START,//开机自启动
 		SERVICE_ERROR_NORMAL,
 		szFilePath,
 		NULL,
 		NULL,
-		TEXT(""),
+		NULL,//TEXT(""),
 		NULL,
 		NULL
 	);

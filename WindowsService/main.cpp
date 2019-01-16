@@ -44,7 +44,7 @@ int main(int argc, char *argv[])
 		case 'd':
 		case 'D':
 			printf("deBug run.\n");
-			BasicMain::service_thread_func(true);
+			BasicMain::service_thread_func();
 			break;
 		case 's':
 		case 'S':

@@ -10,7 +10,7 @@ public:
 	BasicMain(const char* serviceName, const char* displayName);
 	~BasicMain();
 
-	static void service_thread_func(bool deBug);
+	static void service_thread_func();
 	void OnStart(DWORD argc, TCHAR* argv[]);
 };
 
