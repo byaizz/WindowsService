@@ -89,7 +89,7 @@ bool ServiceBase::InstallService()
 
 	::CloseServiceHandle(hService);
 	::CloseServiceHandle(hSCM);
-	return TRUE;
+	return true;
 }
 
 //uninstall service
@@ -120,7 +120,7 @@ bool ServiceBase::UninstallService()
 	{
 		while (::QueryServiceStatus(hService, &status) != SERVICE_STOPPED)
 		{
-			Sleep(1000);
+			Sleep(100);
 		}
 	}
 
@@ -131,7 +131,7 @@ bool ServiceBase::UninstallService()
 
 	if (!bDelete)
 	{
-		logEvent("service couldn't be deleted");
+		MessageBox(NULL, TEXT("service couldn't be deleted"), TEXT(m_serviceName), MB_OK);
 		return false;
 	}
 	return true;
@@ -247,19 +247,19 @@ void ServiceBase::Stop()
 	DWORD dwOriginalState = m_status.dwCurrentState;
 	try
 	{
-		logEvent("service stop pending.");
+		LogEvent("service stop pending.");
 		//Tell SCM that the service is stopping
 		SetServiceStatus(SERVICE_STOP_PENDING);
 		//Perform service-specific stop operations
 		OnStop();
 		//Tell SCM that the service is stopped
 		SetServiceStatus(SERVICE_STOPPED);
-		logEvent("service stopped.");
+		LogEvent("service stopped.");
 	}
 	catch (...)
 	{
 		// Log the error.
-		logEvent("Service failed to stop.");
+		LogEvent("Service failed to stop.");
 		// Set the original service status.
 		SetServiceStatus(dwOriginalState);
 	}
@@ -370,7 +370,7 @@ void ServiceBase::SetServiceStatus(DWORD dwCurrentState,
 	//Report the status of the service to the SCM
 	::SetServiceStatus(m_statusHandle, &m_status);
 }
-void ServiceBase::logEvent(LPCTSTR pFormat, ...)
+void ServiceBase::LogEvent(LPCTSTR pFormat, ...)
 {
 	TCHAR    chMsg[256];
 	HANDLE  hEventSource;
@@ -484,18 +484,18 @@ void WINAPI ServiceBase::ServiceCtrlHandler(DWORD dwCtrl)
 void ServiceBase::Start(DWORD dwArgc, LPTSTR *pszArgv)
 {
 	try {
-		logEvent("service start pending.");
+		LogEvent("service start pending.");
 		//Tell SCM that the service is starting
 		SetServiceStatus(SERVICE_START_PENDING);
 		//Perform service-specific initialization
 		OnStart(dwArgc, pszArgv);
 		//Tell SCM that the service is started
 		SetServiceStatus(SERVICE_RUNNING);
-		logEvent("service running.");
+		LogEvent("service running.");
 	}
 	catch (...) {
 		//Log the error
-		logEvent("service failed to start");
+		LogEvent("service failed to start");
 		//Set the service status to be stopped
 		SetServiceStatus(SERVICE_STOPPED);
 	}
@@ -512,19 +512,19 @@ void ServiceBase::Pause()
 {
 	try
 	{
-		logEvent("service pause pending.");
+		LogEvent("service pause pending.");
 		// Tell SCM that the service is pausing.
 		SetServiceStatus(SERVICE_PAUSE_PENDING);
 		// Perform service-specific pause operations.
 		OnPause();
 		// Tell SCM that the service is paused.
 		SetServiceStatus(SERVICE_PAUSED);
-		logEvent("service paused.");
+		LogEvent("service paused.");
 	}
 	catch (...)
 	{
 		// Log the error.
-		logEvent("Service failed to pause.");
+		LogEvent("Service failed to pause.");
 
 		// Tell SCM that the service is still running.
 		SetServiceStatus(SERVICE_RUNNING);
@@ -542,19 +542,19 @@ void ServiceBase::Continue()
 {
 	try
 	{
-		logEvent("service continue pending.");
+		LogEvent("service continue pending.");
 		//Tell SCM that the service is resuming
 		SetServiceStatus(SERVICE_CONTINUE_PENDING);
 		//Perform service-specific continue operation
 		OnContinue();
 		//Tell SCM that the service is running
 		SetServiceStatus(SERVICE_RUNNING);
-		logEvent("service running.");
+		LogEvent("service running.");
 	}
 	catch (...)
 	{
 		// Log the error.
-		logEvent("Service failed to resume.");
+		LogEvent("Service failed to resume.");
 		// Tell SCM that the service is still paused.
 		SetServiceStatus(SERVICE_PAUSED);
 	}
@@ -570,17 +570,17 @@ void ServiceBase::Shutdown()
 {
 	try
 	{
-		logEvent("service shutdown pending.");
+		LogEvent("service shutdown pending.");
 		// Perform service-specific shutdown operations.
 		OnShutdown();
 		// Tell SCM that the service is stopped.
 		SetServiceStatus(SERVICE_STOPPED);
-		logEvent("service shutdown.");
+		LogEvent("service shutdown.");
 	}
 	catch (...)
 	{
 		// Log the error.
-		logEvent("Service failed to shutdown.");
+		LogEvent("Service failed to shutdown.");
 	}
 }
 #pragma endregion

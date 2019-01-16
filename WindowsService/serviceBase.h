@@ -23,11 +23,7 @@ public:
 	bool UninstallService();//uninstall
 	bool StartInstalledService();//start service
 
-	// Register the executable for a service with the Service Control Manager 
-	// (SCM). After you call Run(ServiceBase), the SCM issues a Start command, 
-	// which results in a call to the OnStart method in the service. This 
-	// method blocks until the service has stopped.
-	bool RunService(ServiceBase *service);
+	//Run the service
 	bool Run();
 
 	//Stop the service
@@ -65,7 +61,7 @@ protected:
 	bool IsInstalled();
 
 	//log
-	void logEvent(LPCTSTR pFormat, ...);
+	void LogEvent(LPCTSTR pFormat, ...);
 
 	// Set the service status and report the status to the SCM.
 	void SetServiceStatus(DWORD dwCurrentState,
@@ -80,6 +76,12 @@ private:
 	// The function is called by the SCM whenever a control code is sent to 
 	// the service.
 	static void WINAPI ServiceCtrlHandler(DWORD dwCtrl);
+
+	// Register the executable for a service with the Service Control Manager 
+	// (SCM). After you call Run(ServiceBase), the SCM issues a Start command, 
+	// which results in a call to the OnStart method in the service. This 
+	// method blocks until the service has stopped.
+	bool RunService(ServiceBase *service);
 
 	// Start the service
 	void Start(DWORD dwArgc, LPTSTR *pszArgv);
