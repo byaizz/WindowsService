@@ -115,7 +115,7 @@ bool ServiceBase::UninstallService()
 		{
 			if (status.dwCurrentState == SERVICE_STOP_PENDING)
 			{
-				printf("service stop pending...");
+				printf("service stop pending...\n");
 				Sleep(1000);
 			}
 			else break;
