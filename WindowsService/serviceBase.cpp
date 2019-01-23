@@ -47,17 +47,12 @@ ServiceBase::~ServiceBase()
 //install service
 bool ServiceBase::InstallService()
 {
-	if (IsInstalled())
-	{
-		return true;
-	}
-
 	//get the executable file path
 	TCHAR szFilePath[MAX_PATH];
-	::GetModuleFileName(NULL, szFilePath, MAX_PATH);
+	GetModuleFileName(NULL, szFilePath, MAX_PATH);
 
 	//open service control manage
-	SC_HANDLE hSCM = ::OpenSCManager(NULL, NULL, SC_MANAGER_ALL_ACCESS);
+	SC_HANDLE hSCM = OpenSCManager(NULL, NULL, SC_MANAGER_ALL_ACCESS);
 	if (hSCM == NULL)
 	{
 		MessageBox(NULL, TEXT("Couldn't open service manage"), TEXT(m_serviceName), MB_OK);
@@ -65,7 +60,7 @@ bool ServiceBase::InstallService()
 	}
 
 	//install the service into SCM by calling CreateService
-	SC_HANDLE hService = ::CreateService(hSCM,
+	SC_HANDLE hService = CreateService(hSCM,
 		TEXT(m_serviceName),
 		TEXT(m_displayName),
 		SERVICE_ALL_ACCESS,
@@ -82,52 +77,64 @@ bool ServiceBase::InstallService()
 
 	if (hService == NULL)
 	{
-		::CloseServiceHandle(hSCM);
+		CloseServiceHandle(hSCM);
 		MessageBox(NULL, TEXT("couldn't create service"), TEXT(m_serviceName), MB_OK);
 		return false;
 	}
 
-	::CloseServiceHandle(hService);
-	::CloseServiceHandle(hSCM);
+	CloseServiceHandle(hService);
+	CloseServiceHandle(hSCM);
 	return true;
 }
 
 //uninstall service
 bool ServiceBase::UninstallService()
 {
-	if (!IsInstalled())
-	{
-		return true;
-	}
-
-	SC_HANDLE hSCM = ::OpenSCManager(NULL, NULL, SC_MANAGER_ALL_ACCESS);
+	SC_HANDLE hSCM = OpenSCManager(NULL, NULL, SC_MANAGER_ALL_ACCESS);
 	if (hSCM == NULL)
 	{
 		MessageBox(NULL, TEXT("couldn't open service manager"), TEXT(m_serviceName), MB_OK);
 		return false;
 	}
 
-	SC_HANDLE hService = ::OpenService(hSCM, TEXT(m_serviceName), SERVICE_STOP | DELETE);
+	SC_HANDLE hService = OpenService(hSCM, TEXT(m_serviceName), SERVICE_STOP | SERVICE_QUERY_STATUS | DELETE);
 	if (hService == NULL)
 	{
-		::CloseServiceHandle(hSCM);
+		CloseServiceHandle(hSCM);
 		MessageBox(NULL, TEXT("couldn't open service"), TEXT(m_serviceName), MB_OK);
 		return false;
 	}
 
 	SERVICE_STATUS status;
-	if (::ControlService(hService, SERVICE_CONTROL_STOP, &status))
+	if (ControlService(hService, SERVICE_CONTROL_STOP, &status))
 	{
-		while (::QueryServiceStatus(hService, &status) != SERVICE_STOPPED)
+		printf("Stopping %s.\n", m_displayName);
+		Sleep(1000);
+
+		while (QueryServiceStatus(hService, &status))
 		{
-			Sleep(100);
+			if (status.dwCurrentState == SERVICE_STOP_PENDING)
+			{
+				printf("service stop pending...");
+				Sleep(1000);
+			}
+			else break;
+		}
+
+		if (status.dwCurrentState == SERVICE_STOPPED)
+		{
+			printf("%s is stopped.\n", m_displayName);
+		}
+		else
+		{
+			printf("%s failed to stop.\n", m_displayName);
 		}
 	}
 
 	//delete service
-	bool bDelete = ::DeleteService(hService);
-	::CloseServiceHandle(hService);
-	::CloseServiceHandle(hSCM);
+	bool bDelete = DeleteService(hService);
+	CloseServiceHandle(hService);
+	CloseServiceHandle(hSCM);
 
 	if (!bDelete)
 	{
@@ -143,17 +150,17 @@ bool ServiceBase::StartInstalledService()
 	bool bResult = false;
 
 	// open service control manager
-	SC_HANDLE hSCM = ::OpenSCManager(NULL, NULL, SC_MANAGER_ALL_ACCESS);
+	SC_HANDLE hSCM = OpenSCManager(NULL, NULL, SC_MANAGER_ALL_ACCESS);
 	if (hSCM == NULL)
 	{
 		return bResult;
 	}
 
 	// get service handle
-	SC_HANDLE hService = ::OpenService(hSCM, m_serviceName, SC_MANAGER_ALL_ACCESS);
+	SC_HANDLE hService = OpenService(hSCM, m_serviceName, SC_MANAGER_ALL_ACCESS);
 	if (hService == NULL)
 	{
-		::CloseServiceHandle(hSCM);
+		CloseServiceHandle(hSCM);
 		MessageBox(NULL, TEXT("Couldn't open service"), TEXT(m_serviceName), MB_OK);
 		return bResult;
 	}
@@ -174,18 +181,18 @@ bool ServiceBase::StartInstalledService()
 		else
 		{
 			DWORD nError = GetLastError();
-			printf_s("service start fail. %d\n", nError);
+			printf("service start fail. %d\n", nError);
 		}
 	}
 	else
 	{
 		DWORD nError = GetLastError();
-		printf_s("service status query fail. %d\n", nError);
+		printf("service status query fail. %d\n", nError);
 	}
 
-	printf_s("now the service is started.\n");
-	::CloseServiceHandle(hService);
-	::CloseServiceHandle(hSCM);
+	printf("now the service is started.\n");
+	CloseServiceHandle(hService);
+	CloseServiceHandle(hSCM);
 
 	return bResult;
 }
@@ -222,13 +229,7 @@ bool ServiceBase::RunService(ServiceBase *service)
 	// manager, which causes the thread to be the service control dispatcher 
 	// thread for the calling process. This call returns when the service has 
 	// stopped. The process should simply terminate when the call returns.
-	if (!StartServiceCtrlDispatcher(serviceTable))
-	{
-		DWORD nError = GetLastError();
-		printf("Start service control dispatcher failed. %d\n", nError);
-		return false;
-	}
-	return true;
+	return StartServiceCtrlDispatcher(serviceTable);
 }
 
 bool ServiceBase::Run()
@@ -322,26 +323,6 @@ void ServiceBase::OnContinue()
 //   system shutting down.
 void ServiceBase::OnShutdown()
 {
-}
-
-//check if the service has installed	
-bool ServiceBase::IsInstalled()
-{
-	bool bResult = false;
-	SC_HANDLE hSCM = ::OpenSCManager(NULL, NULL, SC_MANAGER_ALL_ACCESS);
-
-	if (hSCM != NULL)
-	{
-		//open service
-		SC_HANDLE hService = ::OpenService(hSCM, TEXT(m_serviceName), SERVICE_QUERY_CONFIG);
-		if (hService != NULL)
-		{
-			bResult = true;
-			::CloseServiceHandle(hService);
-		}
-		::CloseServiceHandle(hSCM);
-	}
-	return bResult;
 }
 
 //   FUNCTION: CServiceBase::SetServiceStatus(DWORD, DWORD, DWORD)

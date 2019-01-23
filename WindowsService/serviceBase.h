@@ -56,9 +56,6 @@ protected:
 	// shutting down. Specifies what should occur immediately prior to the 
 	// system shutting down.
 	virtual void OnShutdown();
-	
-	//check the service is installed or not
-	bool IsInstalled();
 
 	//log
 	void LogEvent(LPCTSTR pFormat, ...);
